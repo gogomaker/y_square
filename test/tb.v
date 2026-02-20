@@ -23,8 +23,16 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
+
+  always #1 clk  = ~clk;
+   
+  initial begin
+    #100 $stop; $finish;
+  end
+   
+
   // Replace tt_um_example with your module name:
-  tt_um_example user_project (
+  tt_um_ysquare tb_module (
       .ui_in  (ui_in),    // Dedicated inputs
       .uo_out (uo_out),   // Dedicated outputs
       .uio_in (uio_in),   // IOs: Input path
