@@ -40,23 +40,30 @@ y_square architecture는 다음과 같은 특징 및 구성을 가지고 있다.
 
 | assembly format | RTL | OPcode | Func | IsImmSigned | type |
 | :-: | :-: | :-: | :-: | :-: | :-: |
-| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 0000 | 000 | - | R |
-| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 0000 | 001 | - | R |
-| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 0000 | 010 | - | R |
-| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 0000 | 011 | - | R |
-| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 0000 | 100 | - | R |
-| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 0000 | 101 | - | R |
-| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 0000 | 110 | - | R |
-| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 0000 | 111 | - | R |
-| LW Rd, Rs, imm | Rd <- Mem[Rs + imm] | 0100 | - | True | I |
-| SW Rd, Rs, imm | Mem[Rs + imm] <- Rd | 0101 | - | True | I |
-| ADDI Rd, Rs, imm | Rd <- Rs + imm | 1000 | - | True | I |
-| BEQ Rd, Rs, imm | if(Rd == Rs), PC <- PC + imm | 1001 | - | True | I |
-| ANDI Rd, Rs, imm | Rd <- Rs & imm | 1010 | - | False | I |
-| J imm | PC <- PC[15:13] + imm << 1 | 1100 | - | False | J |
-| JAL imm | PC <- PC[15:13] + imm << 1, LR <- PC | 1101 | - | False | J |
-| JR | PC <- LR | 1110 | - | - | J |
+| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 101 | 000 | - | R |
+| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 101 | 001 | - | R |
+| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 101 | 010 | - | R |
+| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 101 | 011 | - | R |
+| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 101 | 100 | - | R |
+| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 101 | 101 | - | R |
+| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 101 | 110 | - | R |
+| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 101 | 111 | - | R |
+| LW Rd, Rs, imm | Rd <- Mem[Rs + imm] | 110 | - | True | I |
+| SW Rd, Rs, imm | Mem[Rs + imm] <- Rd | 111 | - | True | I |
+| ADDI Rd, Rs, imm | Rd <- Rs + imm | 000 | - | True | I |
+| BEQ Rd, Rs, imm | if(Rd == Rs), PC <- PC + imm | 001 | - | True | I |
+| ANDI Rd, Rs, imm | Rd <- Rs & imm | 010 | - | False | I |
+| J imm | PC <- PC[15:13] + imm << 1 | 011 | - | False | J |
+| JAL imm | PC <- PC[15:13] + imm << 1, LR <- PC | 1010 | - | False | J |
+| JR | PC <- LR | 1011 | - | - | J |
 
+R-type: OPcode(3) / Rd(3) / Rs1(3) / Rs2(3) / Func(3) / NC(1)
+
+I-type: OPcode(3) / Rd(3) / Rs(3) / imm(7)
+
+J instruction: OPcode(3) / address(13)
+
+JAL & JR : OPcode(4) / address(12) 
 
 ## 개발일지
 2026-01-29: 전입 온 군부대에 싸지방이 있는 것을 확인하고 바로 CPU제작을 할 수 있다는 사실에 기뻐하며 CPU를 어떻게 만들지 생각하게 되었음.
