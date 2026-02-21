@@ -2,16 +2,16 @@
 `default_nettype none
 
 module IR(
-  output wire [3:0] OPcode,
+  output wire [2:0] OPcode,
   output wire [2:0] Rd,
   output wire [2:0] Rs1,
   output wire [2:0] Rs2,
   output wire [2:0] func,
-  output wire [5:0] imm,
-  output wire [11:0] imm_address,
+  output wire [6:0] imm,
+  output wire [12:0] imm_address,
   input wire [3:0] mem,
   input wire clk,
-  input wire reset_n, 
+  input wire reset_n,
   input wire [3:0] EN
 );
 
@@ -30,12 +30,12 @@ module IR(
     end
   end
   
-  assign OPcode = register[15:12];
-  assign Rd = register[11:9];
-  assign Rs1 = register[8:6];
-  assign Rs2 = register[5:3];
-  assign func = register[2:0];
-  assign imm = register[5:0];
-  assign imm_address = register[11:0];
+  assign OPcode = register[15:13];
+  assign Rd = register[12:10];
+  assign Rs1 = register[9:7];
+  assign Rs2 = register[6:4];
+  assign func = register[3:1];
+  assign imm = register[6:0];
+  assign imm_address = register[12:0];
 
 endmodule
