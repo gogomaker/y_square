@@ -1,24 +1,26 @@
 `default_nettype none
 
 module shifter(
+  output reg [15:0] answer,
   output reg done,
-  output reg en_parallel_load,
-  output reg en_shift,
   input wire [3:0] shamt,
+  input wire [15:0] parallel_in,
+  input wire serial_in,
   input wire start,
   input wire clk,
-  input wire reset_n
+  input wire reset_n,
+  input wire direction  //0이 right, 1이 left
 );
   localparam WAIT  = 2'b00;
   localparam LOAD  = 2'b01;
   localparam SHIFT = 2'b10;
   localparam DONE  = 2'b11;
 
+  reg en_parallel_load, en_shift;
   reg [1:0] current_state, next_state;
   reg [3:0] counter;
-  reg en_parallel_load, en_shift;
 
-    // State Register
+  // State Register
   always @(posedge clk or negedge reset_n) begin
     if(!reset_n) current_state <= WAIT;
     else         current_state <= next_state;
@@ -54,5 +56,15 @@ module shifter(
       counter <= 4'h0;
     else if(en_shift)
       counter <= counter + 4'h1;
+  end
+
+  // shift register
+  always @(posedge clk, negedge reset_n) begin
+    if(!reset_n)
+      answer <= 16'd0;
+    else if(en_parallel_load)
+      answer <= parallel_in;
+    else if(en_shift)
+      answer <= (direction) ? {answer[14:0], serial_in} : {1'b0, answer[15:1]};
   end
 endmodule
