@@ -7,27 +7,19 @@ module IR(
   output wire [2:0] Rs1,
   output wire [2:0] Rs2,
   output wire [2:0] func,
-  output wire [6:0] imm,
-  output wire [12:0] imm_address,
-  input wire [3:0] mem,
+  output wire [15:0] output_IR,
+  input wire [15:0] input_IR,
   input wire clk,
   input wire reset_n,
-  input wire [3:0] EN
+  input wire en
 );
 
   reg [15:0] register;
   always @(posedge clk, negedge reset_n) begin
     if(!reset_n)
       register <= 16'h0;
-    else begin
-      case(EN)
-        4'b1000: register[15:12] <= mem;
-        4'b0100: register[11:8]  <= mem;
-        4'b0010: register[7:4]   <= mem;
-        4'b0001: register[3:0]   <= mem;
-        default: register <= register;
-      endcase
-    end
+    else if(en)
+      register <= input_IR;
   end
   
   assign OPcode = register[15:13];
@@ -35,7 +27,6 @@ module IR(
   assign Rs1 = register[9:7];
   assign Rs2 = register[6:4];
   assign func = register[3:1];
-  assign imm = register[6:0];
-  assign imm_address = register[12:0];
+  assign output_IR = register;
 
 endmodule
