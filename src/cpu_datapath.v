@@ -29,15 +29,15 @@ module cpu_datapath(
   always @(posedge clk)
     zero_flag <= zero;
   
-  pc PC(
+  PC pc(
     .address(address_PC),
     .load_constant((sel_PCconst) ? immAddress : ALUout),
     .clk(clk),
     .reset_n(reset_n), 
-    .EN(EN_pc),
+    .EN(EN_pc)
   );
   
-  ir IR(
+  IR ir(
     .OPcode(OPcode),
     .Rd(Rd),
     .Rs1(Rs1),
@@ -50,36 +50,36 @@ module cpu_datapath(
     .en(EN_ir)
   );
 
-  rf register_file(
-    regA(A),
-    regB(B),
-    Rd((OPcode == 3'b101) ? 3'b111 : Rd),
-    Rs1(Rs1),
-    Rs2(((OPcode == 3'b111) || (OPcode == 3'b001)) ? Rd : Rs2),
-    write_data((OPcode == 3'b110) ? ALUout : parallel_in_shifter),
-    EN(EN_rf),
-    clk(clk),
-    reset_n(reset_n)
+  register_file rf(
+    .regA(A),
+    .regB(B),
+    .Rd((OPcode == 3'b101) ? 3'b111 : Rd),
+    .Rs1(Rs1),
+    .Rs2(((OPcode == 3'b111) || (OPcode == 3'b001)) ? Rd : Rs2),
+    .write_data((OPcode == 3'b110) ? ALUout : parallel_in_shifter),
+    .EN(EN_rf),
+    .clk(clk),
+    .reset_n(reset_n)
   );
 
-  imm_gen(
-    imm_address_extended(immAddress),
-    imm_extended(immData),
-    ir(data_IR),
-    PC(address_PC)
+  imm_gen im(
+    .imm_address_extended(immAddress),
+    .imm_extended(immData),
+    .ir(data_IR),
+    .PC(address_PC)
   );
 
-  ALU(
-    zero(zero),           //for controller
-    shamt(shamt),         //for shifter
-    direction(direction), //for shifter
-    shift_answer(parallel_in_shifter) //for shifter
-    answer(ALUout),       //for ALU
-    A((sel_A) ? address_PC : A),        //for ALU
-    B((sel_B[1]) ? 
+  ALU alu(
+    .zero(zero),           //for controller
+    .shamt(shamt),         //for shifter
+    .direction(direction), //for shifter
+    .shift_answer(parallel_in_shifter) //for shifter
+    .answer(ALUout),       //for ALU
+    .A((sel_A) ? address_PC : A),        //for ALU
+    .B((sel_B[1]) ? 
       ((sel_B[0]) ? Rs2 : immData) : 
       ((sel_B[0]) ? 16'd2 : 16'd0)),           //for ALU
-    mode((OPcode = 3'b101) ? func : 
+    .mode((OPcode = 3'b101) ? func : 
          (OPcode[2] == 1'b0) ? OPcode : 
          3'b000)         //for ALU
 );
