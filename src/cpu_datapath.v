@@ -73,13 +73,13 @@ module cpu_datapath(
     .zero(zero),           //for controller
     .shamt(shamt),         //for shifter
     .direction(direction), //for shifter
-    .shift_answer(parallel_in_shifter) //for shifter
+    .shift_answer(parallel_in_shifter), //for shifter
     .answer(ALUout),       //for ALU
     .A((sel_A) ? address_PC : A),        //for ALU
     .B((sel_B[1]) ? 
       ((sel_B[0]) ? Rs2 : immData) : 
       ((sel_B[0]) ? 16'd2 : 16'd0)),           //for ALU
-    .mode((OPcode = 3'b101) ? func : 
+    .mode((OPcode == 3'b101) ? func : 
          (OPcode[2] == 1'b0) ? OPcode : 
          3'b000)         //for ALU
 );
