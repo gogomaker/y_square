@@ -3,11 +3,11 @@
 module ALU(
   output wire zero,          //for controller
   output wire [3:0] shamt,   //for shifter
-  output wire direction      //for shifter
+  output wire direction,     //for shifter
   output reg [15:0] answer,  //for ALU
   input wire [15:0] A,       //for ALU
   input wire [15:0] B,       //for ALU
-  input wire [2:0] mode      //for ALU
+  input wire [2:0] mode,     //for ALU
   input wire [15:0] shift_answer //for shifter
 );
 
