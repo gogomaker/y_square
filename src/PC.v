@@ -1,11 +1,11 @@
 `default_nettype none
 
 module PC(
-  output reg [15:0] address
+  output reg [15:0] address,
   input wire [15:0] load_constant,
   input wire clk,
   input wire reset_n, 
-  input wire EN,
+  input wire EN
 );
 
   always @(posedge clk, negedge reset_n) begin
