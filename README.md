@@ -40,14 +40,14 @@ y_square architecture는 다음과 같은 특징 및 구성을 가지고 있다.
 
 | assembly format | RTL | OPcode | Func | IsImmSigned | type |
 | :-: | :-: | :-: | :-: | :-: | :-: |
-| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 101 | 000 | - | R |
-| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 101 | 001 | - | R |
-| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 101 | 010 | - | R |
-| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 101 | 011 | - | R |
-| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 101 | 100 | - | R |
-| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 101 | 101 | - | R |
-| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 101 | 110 | - | R |
-| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 101 | 111 | - | R |
+| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 100 | 000 | - | R |
+| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 100 | 001 | - | R |
+| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 100 | 010 | - | R |
+| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 100 | 011 | - | R |
+| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 100 | 100 | - | R |
+| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 100 | 101 | - | R |
+| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 100 | 110 | - | R |
+| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 100 | 111 | - | R |
 | LW Rd, Rs, imm | Rd <- Mem[Rs + imm] | 110 | - | True | I |
 | SW Rd, Rs, imm | Mem[Rs + imm] <- Rd | 111 | - | True | I |
 | ADDI Rd, Rs, imm | Rd <- Rs + imm | 000 | - | True | I |
@@ -84,3 +84,6 @@ JAL & JR : OPcode(4) / address(12)
 2026-02-21: 이 날은 CPU의 dapapath에 들어갈 모든 코드를 작성 완료했다. 테스트는 아직 진행하지 않았다. 컨트롤 모듈을 모두 작성한 후에, 큰 테스트벤치를 하나 만들어 돌려보려 한다. 
 
 2026-03-14: 오랜만에 작업을 했다. 이 날은 datapath의 수정된 부분을 모두 고치고, 상위 코드도 작성을 했다. 
+
+2026-03-20: 금요일이다. 평일 저녁에 시간 내서 작성해 보는 건 처음이다. 오늘은 ISA의 틀렸던 부분(OPcode 정의)를 고쳤다. 이번 주 동안은 종이에 설계 자료를 작성하였다. 결과적으로, 컨트롤러의 설계를 일부 마쳤다. 이를 코드로 옮기기만 하면 된다. 
+
