@@ -1,22 +1,25 @@
 `default_nettype none
 
 module cpu_datapath(
-  output wire [15:0] address,     // to memory
+  output wire [15:0] address,         // to memory
   output wire [15:0] parallel_memory, // to memory
   output wire [15:0] parallel_out_shifter, // to shifter
-  output wire [3:0] shamt, // to shifter
-  output wire direction,// to shifter
-  output reg zero_flag,  // to controller
-  output wire [2:0] OPcode,  // to controller
+  output wire [3:0] shamt,                 // to shifter
+  output wire direction,                   // to shifter
+  output reg zero_flag,          // to controller
+  output wire [3:0] OPcode_ctr,  // to controller
 
   input wire [15:0] parallel_in_shifter, // from shifter
   input wire sel_address,  // from controller
   input wire sel_PCconst,  // from controller
-  input wire EN_pc,  // from controller
-  input wire EN_ir,  // from controller
-  input wire EN_rf,  // from controller
-  input wire sel_A,  // from controller
+  input wire sel_Rs2,
+  input wire sel_Rd,
+  input wire sel_write,
+  input wire sel_A,        // from controller
   input wire [1:0] sel_B,  // from controller
+  input wire EN_pc,        // from controller
+  input wire EN_ir,        // from controller
+  input wire EN_rf,        // from controller
   input wire clk,
   input wire reset_n
 );
@@ -25,7 +28,8 @@ module cpu_datapath(
   wire [15:0] data_IR, A, B, ALUout, address_PC, immAddress, immData;
   
   assign address = (sel_address) ? ALUout : address_PC;
-
+  assign OPcode_ctr = data_IR[15:12];
+  
   always @(posedge clk)
     zero_flag <= zero;
   
@@ -53,10 +57,10 @@ module cpu_datapath(
   register_file rf(
     .regA(A),
     .regB(B),
-    .Rd((OPcode == 3'b101) ? 3'b111 : Rd),
+    .Rd(sel_Rd ? 3'b111 : Rd),
     .Rs1(Rs1),
-    .Rs2(((OPcode == 3'b111) || (OPcode == 3'b001)) ? Rd : Rs2),
-    .write_data((OPcode == 3'b110) ? ALUout : parallel_in_shifter),
+    .Rs2(sel_Rs2 ? Rd : Rs2),
+    .write_data(sel_write ? parallel_in_shifter : ALUout),
     .EN(EN_rf),
     .clk(clk),
     .reset_n(reset_n)
@@ -79,7 +83,7 @@ module cpu_datapath(
     .B((sel_B[1]) ? 
       ((sel_B[0]) ? Rs2 : immData) : 
       ((sel_B[0]) ? 16'd2 : 16'd0)),           //for ALU
-    .mode((OPcode == 3'b101) ? func : 
+    .mode((OPcode == 3'b100) ? func : 
          (OPcode[2] == 1'b0) ? OPcode : 
          3'b000)         //for ALU
 );
