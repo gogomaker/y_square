@@ -27,6 +27,7 @@ module cpu_datapath(
   wire [15:0] data_IR, A, B, ALUout, address_PC, immAddress, immData;
   
   assign address = (sel_address) ? ALUout : address_PC;
+  assign parallel_memory = B;
   assign OPcode_ctr = data_IR[15:12];
   assign func_out = func[2:1];
   always @(posedge clk)
