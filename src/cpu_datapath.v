@@ -84,6 +84,6 @@ module cpu_datapath(
     .mode((OPcode == 3'b100) ? func : 
          (OPcode[2] == 1'b0) ? OPcode : 
          3'b000)         //for ALU
-);
+  );
 
 endmodule
