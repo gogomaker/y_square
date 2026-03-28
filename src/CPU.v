@@ -20,8 +20,6 @@ module CPU(
     .OPcode(OPcode),
     .sel_address(sel_address),  // from controller
     .sel_PCconst(sel_PCconst),  // from controller
-    .sel_Rs2(sel_Rs2),
-    .sel_Rd(sel_Rd),
     .sel_write(sel_write),
     .sel_A(sel_A),  // from controller
     .sel_B(sel_B),  // from controller
@@ -46,8 +44,6 @@ module CPU(
     .parallel_in_shifter(), // from shifter
     .sel_address(sel_address),  // from controller
     .sel_PCconst(sel_PCconst),  // from controller
-    .sel_Rs2(sel_Rs2),
-    .sel_Rd(sel_Rd),
     .sel_write(sel_write),
     .sel_A(sel_A),  // from controller
     .sel_B(sel_B),  // from controller
