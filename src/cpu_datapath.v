@@ -8,6 +8,7 @@ module cpu_datapath(
   output wire direction,                   // to shifter
   output reg zero_flag,          // to controller
   output wire [3:0] OPcode_ctr,  // to controller
+  output wire [1:0] func_out,
 
   input wire [15:0] parallel_in_shifter, // from shifter
   input wire sel_address,  // from controller
@@ -27,7 +28,7 @@ module cpu_datapath(
   
   assign address = (sel_address) ? ALUout : address_PC;
   assign OPcode_ctr = data_IR[15:12];
-  
+  assign func_out = func[2:1];
   always @(posedge clk)
     zero_flag <= zero;
   
