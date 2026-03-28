@@ -12,8 +12,6 @@ module cpu_datapath(
   input wire [15:0] parallel_in_shifter, // from shifter
   input wire sel_address,  // from controller
   input wire sel_PCconst,  // from controller
-  input wire sel_Rs2,
-  input wire sel_Rd,
   input wire sel_write,
   input wire sel_A,        // from controller
   input wire [1:0] sel_B,  // from controller
@@ -57,9 +55,9 @@ module cpu_datapath(
   register_file rf(
     .regA(A),
     .regB(B),
-    .Rd(sel_Rd ? 3'b111 : Rd),
+    .Rd((OPcode == 3'b101) ? 3'b111 : Rd),
     .Rs1(Rs1),
-    .Rs2(sel_Rs2 ? Rd : Rs2),
+    .Rs2(((OPcode == 3'b111) || (OPcode == 3'b001)) ? Rd : Rs2),
     .write_data(sel_write ? parallel_in_shifter : ALUout),
     .EN(EN_rf),
     .clk(clk),
