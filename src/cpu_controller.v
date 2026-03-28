@@ -1,6 +1,6 @@
 `default_nettype none
 
-module cpu_controller controller(
+module cpu_controller(
   output reg sel_address,
   output reg sel_PCconst,
   output reg sel_write,
