@@ -58,9 +58,9 @@ module cpu_controller(
           next_state = WRTRF;
         else if(OPcode[3:1] == 3'b011)
           next_state = PCRDY;
-        else if(OPcode == 4'1010)
+        else if(OPcode == 4'b1010)
           next_state = LRWRT;
-        else if(OPcode == 4'1011)
+        else if(OPcode == 4'b1011)
           next_state = PCWRT;
         else if(OPcode[3:1] == 3'b111)
           next_state = WRTMM;
@@ -89,7 +89,7 @@ module cpu_controller(
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; end
-      READY: begin EN_pc = 1'b1; sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); sel_B = (OPcpde == 3'b100) ? 0 : (OPcode == 3'b101) ? 3 : 1); end
+      READY: begin EN_pc = 1'b1; sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); sel_B = (OPcpde == 3'b100) ? 0 : (OPcode == 3'b101) ? 3 : 1; end
       SHIFT: sel_sr = 1'b1;
       WRTRF: EN_rf = 1'b1;
       PCRDY: sel_PCconst = 1'b1;
