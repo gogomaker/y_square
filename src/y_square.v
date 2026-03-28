@@ -7,22 +7,47 @@
 `default_nettype none
 
 module tt_um_ysquare (
-    input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+  input  wire [7:0] ui_in,    // Dedicated inputs
+  output wire [7:0] uo_out,   // Dedicated outputs
+  input  wire [7:0] uio_in,   // IOs: Input path
+  output wire [7:0] uio_out,  // IOs: Output path
+  output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
+  input  wire       ena,      // always 1 when the design is powered, so you can ignore it
+  input  wire       clk,      // clock
+  input  wire       rst_n     // reset_n - low to reset
 );
 
-  // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = uio_oe ? ui_in : uio_in;
-  assign uio_out = uio_oe ? ui_in : 8'b0;
-  assign uio_oe  = &ui_in;
+  CPU cpu(
+    .address_memory(),
+    .data_memory_in(),
+    .data_memory_out(),
+    .parallel_out_shifter(),
+    .shamt(),
+    .direction(),
+    .sel_sr(),
+    //memory control signal port
+    .start_read_mem(),
+    .start_write_mem(),
+    .read_done(),
+    .write_done(),
+    //system port
+    .clk(clk),
+    .reset_n(rst_n)
+  );
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+  shifter s(
+    .answer(),
+    .done(),
+    .shamt(),
+    .parallel_in(),
+    .serial_in(),
+    .start(),
+    .direction(),  //0이 right, 1이 left
+    .clk(clk),
+    .reset_n(rst_n)
+  );
+  
+  wire unused;
+  assign unused = ena;
 
 endmodule
