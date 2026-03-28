@@ -1,15 +1,85 @@
 `default_nettype none
 
 module cpu_controller controller(
-  input wire zero_flag,
+  output reg sel_address,
+  output reg sel_PCconst,
+  output reg sel_Rs2,
+  output reg sel_Rd,
+  output reg sel_write,
+  output reg sel_A,
+  output reg [1:0] sel_B,
+  output reg sel_sr,
+  output reg EN_pc,
+  output reg EN_ir,
+  output reg EN_rf,
   input wire [3:0] OPcode,
-  output wire sel_address,
-  output wire sel_PCconst,
-  output wire EN_pc,
-  output wire EN_ir,
-  output wire EN_rf,
-  output wire sel_A,
-  output wire [1:0] sel_B,
+  input wire [1:0] func,
+  input wire zero_flag,
+  input wire read_done,
+  input wire write_done,
   input wire clk,
   input wire reset_n
 );
+
+  // define state
+  reg [3:0] state, next_state;
+  localparam START = 4'h0;  // reset state
+  localparam WATM1 = 4'h1;  // wait memory latency state 1
+  localparam PC_UP = 4'h2;  // PC increase state
+  localparam READY = 4'h3;  // wait for datapath state
+  localparam SHIFT = 4'h4;  // for SLR, SLL state 
+  localparam WRTRF = 4'h5;  // write register file state
+  localparam PCRDY = 4'h6;  // PC ready state, for load constant value
+  localparam LRWRT = 4'h7;  // Link register write state
+  localparam PCWRT = 4'h8;  // PC write state
+  localparam WRTMM = 4'h9;  // Read memory start state
+  localparam WATM2 = 4'hA;  // wait memory latency state 2
+  localparam READM = 4'hB;  // write memory start state
+  localparam WATM3 = 4'hC;  // wait memory latency state 3
+  localparam WMTRF = 4'hD;  // write memory to register file
+  
+  // define current state
+  always @(posedge clk, negedge reset_n) begin
+    if(!reset_n)
+      state <= START;
+    else
+      state <= next_state;
+  end
+  // define next state
+  always @(*) begin
+    case(state)
+      START: next_state = WATM1;
+      WATM1: next_state = (read_done) ? PC_UP : WATM1;
+      PC_UP: next_state = READY;
+      READY: begin
+        if(OPcode[3:1] == 3'b100)
+          next_state = (func == 2'b11) ? SHIFT : WRTRF;
+        else if(OPcode[3] == 1'b0 & (OPcode[2] == 1'b0 | OPcode[1] == 1'b0))
+          next_state = WRTRF;
+        else if(OPcode[3:1] == 3'b011)
+          next_state = PCRDY;
+        else if(OPcode == 4'1010)
+          next_state = LRWRT;
+        else if(OPcode == 4'1011)
+          next_state = PCWRT;
+        else if(OPcode[3:1] == 3'b111)
+          next_state = WRTMM;
+        else if(OPcode[3:1] == 3'b110)
+          next_state = READM;
+        else
+          next_state = START;
+      end
+      SHIFT: next_state = WRTRF;
+      WRTRF: next_state = START;
+      PCRDY: next_state = PCWRT;
+      LRWRT: next_state = PCWRT;
+      PCWRT: next_state = START;
+      WRTMM: next_state = WATM2;
+      WATM2: next_state = (write_done) ? START : WATM2;
+      READM: next_state = WATM3;
+      WATM3: next_state = (read_done) ? WMTRF : WATM3;
+      WMTRF: next_state = START;
+      default: next_state = START;
+    endcase
+  end
+endmodule
