@@ -7,17 +7,19 @@ module CPU(
   output wire [3:0] shamt,
   output wire direction,
   output wire sel_sr,
+  output wire start_read_mem,
+  output wire start_write_mem,
   input wire [15:0] data_memory_in,
+  input wire read_done,
+  input wire write_done,
   input wire clk,
   input wire reset_n
 );
 
-  wire sel_address, sel_PCconst, EN_pc, EN_ir, EN_rf, sel_A, sel_B, zero_flag;
+  wire sel_address, sel_PCconst, EN_pc, EN_ir, EN_rf, sel_A, sel_B, zero_flag, sel_write;
   wire [2:0] OPcode;
-
+  wire [1:0] func;
   cpu_controller controller(
-    .zero_flag(zero_flag),
-    .OPcode(OPcode),
     .sel_address(sel_address),  // from controller
     .sel_PCconst(sel_PCconst),  // from controller
     .sel_write(sel_write),
@@ -27,11 +29,17 @@ module CPU(
     .EN_pc(EN_pc),  // from controller
     .EN_ir(EN_ir),  // from controller
     .EN_rf(EN_rf),  // from controller
+    .start_read_mem(start_read_mem), 
+    .start_write_mem(start_write_mem), 
+    .OPcode(OPcode),
+    .func(func),
+    .zero_flag(zero_flag),
+    .read_done(read_done),
+    .write_done(write_done),
     .clk(clk),
     .reset_n(reset_n)
   );
 
-  
   cpu_datapath datapath(
     .address(address_memory),     // to memory
     .parallel_memory(data_memory_out), // to memory
@@ -40,6 +48,7 @@ module CPU(
     .direction(direction),// to shifter
     .zero_flag(zero_flag),  // to controller
     .OPcode_ctr(OPcode),  // to controller
+    .func(func),
 
     .parallel_in_shifter(), // from shifter
     .sel_address(sel_address),  // from controller
