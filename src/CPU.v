@@ -48,7 +48,7 @@ module CPU(
     .direction(direction),// to shifter
     .zero_flag(zero_flag),  // to controller
     .OPcode_ctr(OPcode),  // to controller
-    .func(func),
+    .func_out(func),
 
     .parallel_in_shifter(), // from shifter
     .sel_address(sel_address),  // from controller
