@@ -54,38 +54,42 @@ module SPI(
 
   // Next State Logic
   always @(*) begin
-    next_state = state; // 기본값
     case(state)
       WAIT: begin
         if(start_write_mem)      next_state = WREN;
-        else if(start_read_mem)  next_state = SEND; // 읽기는 WREN 없이 바로 전송
+        else if(start_read_mem)  next_state = SEND;
+        else                     next_state = WAIT;
       end
-      
+          
       WREN: begin
-        if(counter == 6'd7)      next_state = TOGGLE; // 8비트 전송 완료
+        if(counter == 6'd7)      next_state = TOGGLE;
+        else                     next_state = WREN;
       end
-      
+          
       TOGGLE: begin
-                                 next_state = SEND;   // 1클록만 대기 후 바로 SEND로 이동
+        next_state = SEND;
       end
-      
+          
       SEND: begin
-        if(status) begin // READ의 경우 (32비트: OP + Addr)
+        if(status) begin // READ
           if(counter == 6'd31)   next_state = READ_DATA;
-        end else begin   // WRITE의 경우 (48비트: OP + Addr + Data)
+          else                   next_state = SEND;
+        end else begin   // WRITE
           if(counter == 6'd47)   next_state = DONE;
+          else                   next_state = SEND;
         end
       end
-      
+          
       READ_DATA: begin
-        if(counter == 6'd15)     next_state = DONE;   // 16비트 읽기 완료
+        if(counter == 6'd15)     next_state = DONE;
+        else                     next_state = READ_DATA;
       end
-      
+          
       DONE: begin
-                                 next_state = WAIT;
+        next_state = WAIT;
       end
-      
-      default:                   next_state = WAIT;
+          
+      default:                     next_state = WAIT;
     endcase
   end
 
