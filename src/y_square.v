@@ -68,8 +68,11 @@ module tt_um_ysquare (
     .clk(clk),
     .reset_n(rst_n)
   );
-
+  //this is for just test.
   wire unused;
-  assign unused = ena;
+  assign unused = ena | &ui_in | &uio_in;
+  assign uo_out = 8'b0;
+  assign uio_out[7:6] = 2'b0;
+  assign uio_out[4:0] = 5'b0;
   assign uio_oe = 8'b11011110;
 endmodule
