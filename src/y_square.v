@@ -39,7 +39,7 @@ module tt_um_ysquare (
     .reset_n(rst_n)
   );
 
-  module SPI(
+  SPI spi(
     // CPU 컨트롤러와의 인터페이스
     .address(address),
     .data(data_for_spi),
