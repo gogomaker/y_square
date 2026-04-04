@@ -24,6 +24,14 @@ module tt_um_ysquare (
   wire [15:0] spi_data_in, io_data_in;
   wire read_done, write_done;
 
+  // Additional wire declarations
+  wire [15:0] parallel_out_shifter;
+  wire shifting_CPU, direction_of_CPU, sr_parallel_load, sel_sr;
+  wire [15:0] sr_parallel_out;
+  wire shifting_SPI;
+  wire [15:0] spi_data_in;
+  wire read_done_spi, write_done_spi;
+
   // 2. Address Decoder (교통정리)
   address_decoder decoder (
     .address(cpu_addr),
