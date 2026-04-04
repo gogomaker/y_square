@@ -18,7 +18,7 @@ module tt_um_ysquare (
 );
 
   wire start_read_mem, start_write_mem, read_done, write_done, sel_sr;
-  wire direction_of_CPU, shifting_CPU, shifting_SPI, sr_parallel_loading;
+  wire direction_of_CPU, shifting_CPU, shifting_SPI, sr_parallel_load;
   wire [15:0] address, data_for_spi, sr_parallel_out, parallel_out_shifter;
   CPU cpu(
     .address_memory(address),
@@ -27,7 +27,7 @@ module tt_um_ysquare (
     .parallel_out_shifter(parallel_out_shifter),
     .start_shifting(shifting_CPU),
     .direction(direction_of_CPU),
-    .sr_parallel_loading(sr_parallel_loading),
+    .sr_parallel_load(sr_parallel_load),
     .sel_sr(sel_sr),
     //memory control signal port
     .start_read_mem(start_read_mem),
@@ -55,7 +55,7 @@ module tt_um_ysquare (
     .MISO(uio_in[5]),   // Master In Slave Out (외부 시프터가 직접 받을 수도 있음)
     // 시스템 신호
     .clk(clk),
-    .reset_n(reset_n)
+    .reset_n(rst_n)
   );
 
   shifter s(
@@ -63,10 +63,10 @@ module tt_um_ysquare (
     .parallel_in(parallel_out_shifter),
     .serial_in(uio_in[5]),
     .en_shift(sel_sr ? shifting_CPU : shifting_SPI),
-    .en_load(sel_sr ? sr_parallel_loading : 1'b0),     // 병렬 로딩 활성화 신호
+    .en_load(sel_sr ? sr_parallel_load : 1'b0),     // 병렬 로딩 활성화 신호
     .direction(sel_sr ? direction_of_CPU : 1'b1),   // 1: Left, 0: Right
     .clk(clk),
-    .reset_n(reset_n)
+    .reset_n(rst_n)
   );
 
   wire unused;
