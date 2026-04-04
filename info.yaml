@@ -8,7 +8,7 @@ project:
   clock_hz:     25000000     # Clock frequency in Hz (or 0 if not applicable)
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  tiles: "2x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
   top_module:  "tt_um_ysquare"
@@ -27,6 +27,7 @@ project:
     - "imm_gen.v"
     - "register_file.v"
     - "shifter.v"
+    - "SPI.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
@@ -56,10 +57,10 @@ pinout:
   uio[1]: "TX"
   uio[2]: "CS"
   uio[3]: "SCLK"
-  uio[4]: "IO0"
-  uio[5]: "IO1"
-  uio[6]: "IO2"
-  uio[7]: "IO3"
+  uio[4]: "MOSI"
+  uio[5]: "MISO"
+  uio[6]: "IO6"
+  uio[7]: "IO7"
 
 # Do not change!
 yaml_version: 6
