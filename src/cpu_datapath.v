@@ -23,7 +23,7 @@ module cpu_datapath(
   input wire reset_n
 );
   wire zero;
-  wire [2:0] Rd, Rs1, Rs2, func;
+  wire [2:0] Rd, Rs1, Rs2, func, OPcode;
   wire [15:0] data_IR, A, B, ALUout, address_PC, immAddress, immData;
   
   assign address = (sel_address) ? ALUout : address_PC;
