@@ -12,6 +12,8 @@ module cpu_controller(
   output reg EN_rf,
   output reg start_read_mem,
   output reg start_write_mem,
+  output reg start_shifting,
+  input wire [3:0] shamt,
   input wire [3:0] OPcode,
   input wire [1:0] func,
   input wire zero_flag,
@@ -69,7 +71,7 @@ module cpu_controller(
         else
           next_state = START;
       end
-      SHIFT: next_state = WRTRF;
+      SHIFT: next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
       WRTRF: next_state = START;
       PCRDY: next_state = PCWRT;
       LRWRT: next_state = PCWRT;
@@ -83,14 +85,30 @@ module cpu_controller(
     endcase
   end
 
+  // ---------------------------------------------------------
+  // [추가] 시프트 연산을 위한 4비트 카운터
+  // ---------------------------------------------------------
+  reg [3:0] shift_counter;
+  always @(posedge clk or negedge reset_n) begin
+    if(!reset_n)
+      shift_counter <= 4'h0;
+    else if(state == SHIFT)
+      shift_counter <= shift_counter + 4'h1;
+    else
+      shift_counter <= 4'h0; // SHIFT 상태가 아니면 항상 0으로 리셋
+  end
+
+  
   // define current output
   always @(*) begin
-    {sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 12'b0;
+    {start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; end
       READY: begin EN_pc = 1'b1; sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); sel_B = (OPcpde == 3'b100) ? 0 : (OPcode == 3'b101) ? 3 : 1; end
-      SHIFT: sel_sr = 1'b1;
+      SHIFT: begin sel_sr = 1'b1; 
+        if (shamt != 4'h0) start_shifting = 1'b1; 
+      end
       WRTRF: EN_rf = 1'b1;
       PCRDY: sel_PCconst = 1'b1;
       LRWRT: begin EN_rf = 1'b1; sel_PCconst = 1'b1; end
@@ -98,7 +116,7 @@ module cpu_controller(
       WRTMM: start_write_mem = 1'b1;
       READM: start_read_mem = 1'b1;
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
-      default: {sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 12'b0;
+      default: {start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
     endcase
   end
 endmodule
