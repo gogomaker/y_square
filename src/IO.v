@@ -1,6 +1,6 @@
 `default_nettype none
 
-module io(
+module IO(
   // 시스템 신호
   input wire clk,
   input wire reset_n,
