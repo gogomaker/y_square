@@ -68,6 +68,7 @@ module tt_um_ysquare (
     .data(cpu_data_out),
     .start_read_mem(cpu_start_read & spi_en),   // SPI 영역일 때만 시작
     .start_write_mem(cpu_start_write & spi_en), // SPI 영역일 때만 시작
+    .start_shifting(shifting_SPI),
     .read_done(read_done_spi),
     .write_done(write_done_spi),
     .CS_n(uio_out[2]), .SCLK(uio_out[3]), .MOSI(uio_out[4]), .MISO(uio_in[5]),
