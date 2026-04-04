@@ -13,6 +13,7 @@ module cpu_controller(
   output reg start_read_mem,
   output reg start_write_mem,
   output reg start_shifting,
+  output reg sr_parallel_load,  // [추가] 시프터 병렬 로드 신호
   input wire [3:0] shamt,
   input wire [3:0] OPcode,
   input wire [1:0] func,
@@ -25,28 +26,30 @@ module cpu_controller(
 
   // define state
   reg [3:0] state, next_state;
-  localparam START = 4'h0;  // reset state
-  localparam WATM1 = 4'h1;  // wait memory latency state 1
-  localparam PC_UP = 4'h2;  // PC increase state
-  localparam READY = 4'h3;  // wait for datapath state
-  localparam SHIFT = 4'h4;  // for SLR, SLL state 
-  localparam WRTRF = 4'h5;  // write register file state
-  localparam PCRDY = 4'h6;  // PC ready state, for load constant value
-  localparam LRWRT = 4'h7;  // Link register write state
-  localparam PCWRT = 4'h8;  // PC write state
-  localparam WRTMM = 4'h9;  // Read memory start state
-  localparam WATM2 = 4'hA;  // wait memory latency state 2
-  localparam READM = 4'hB;  // write memory start state
-  localparam WATM3 = 4'hC;  // wait memory latency state 3
-  localparam WMTRF = 4'hD;  // write memory to register file
+  localparam START  = 4'h0;  // reset state
+  localparam WATM1  = 4'h1;  // wait memory latency state 1
+  localparam PC_UP  = 4'h2;  // PC increase state
+  localparam READY  = 4'h3;  // wait for datapath state
+  localparam SHIFT  = 4'h4;  // for SLR, SLL state 
+  localparam WRTRF  = 4'h5;  // write register file state
+  localparam PCRDY  = 4'h6;  // PC ready state, for load constant value
+  localparam LRWRT  = 4'h7;  // Link register write state
+  localparam PCWRT  = 4'h8;  // PC write state
+  localparam WRTMM  = 4'h9;  // Read memory start state
+  localparam WATM2  = 4'hA;  // wait memory latency state 2
+  localparam READM  = 4'hB;  // write memory start state
+  localparam WATM3  = 4'hC;  // wait memory latency state 3
+  localparam WMTRF  = 4'hD;  // write memory to register file
+  localparam LOADSR = 4'hE;  // [추가] Load Shift Register state
   
   // define current state
-  always @(posedge clk, negedge reset_n) begin
+  always @(posedge clk or negedge reset_n) begin
     if(!reset_n)
       state <= START;
     else
       state <= next_state;
   end
+
   // define next state
   always @(*) begin
     case(state)
@@ -55,7 +58,8 @@ module cpu_controller(
       PC_UP: next_state = READY;
       READY: begin
         if(OPcode[3:1] == 3'b100)
-          next_state = (func == 2'b11) ? SHIFT : WRTRF;
+          // [수정] SHIFT로 바로 가지 않고 LOADSR로 먼저 이동
+          next_state = (func == 2'b11) ? LOADSR : WRTRF; 
         else if(OPcode[3] == 1'b0 & (OPcode[2] == 1'b0 | OPcode[1] == 1'b0))
           next_state = WRTRF;
         else if(OPcode[3:1] == 3'b011)
@@ -71,22 +75,24 @@ module cpu_controller(
         else
           next_state = START;
       end
-      SHIFT: next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
-      WRTRF: next_state = START;
-      PCRDY: next_state = PCWRT;
-      LRWRT: next_state = PCWRT;
-      PCWRT: next_state = START;
-      WRTMM: next_state = WATM2;
-      WATM2: next_state = (write_done) ? START : WATM2;
-      READM: next_state = WATM3;
-      WATM3: next_state = (read_done) ? WMTRF : WATM3;
-      WMTRF: next_state = START;
+      // [추가] LOADSR 상태 다음에는 SHIFT로 이동
+      LOADSR: next_state = SHIFT;
+      SHIFT:  next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
+      WRTRF:  next_state = START;
+      PCRDY:  next_state = PCWRT;
+      LRWRT:  next_state = PCWRT;
+      PCWRT:  next_state = START;
+      WRTMM:  next_state = WATM2;
+      WATM2:  next_state = (write_done) ? START : WATM2;
+      READM:  next_state = WATM3;
+      WATM3:  next_state = (read_done) ? WMTRF : WATM3;
+      WMTRF:  next_state = START;
       default: next_state = START;
     endcase
   end
 
   // ---------------------------------------------------------
-  // [추가] 시프트 연산을 위한 4비트 카운터
+  // 시프트 연산을 위한 4비트 카운터
   // ---------------------------------------------------------
   reg [3:0] shift_counter;
   always @(posedge clk or negedge reset_n) begin
@@ -98,15 +104,26 @@ module cpu_controller(
       shift_counter <= 4'h0; // SHIFT 상태가 아니면 항상 0으로 리셋
   end
 
-  
   // define current output
   always @(*) begin
-    {start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
+    // [수정] sr_parallel_load를 포함하여 14비트 폭으로 확장 (래치 완벽 방지)
+    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+    
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; end
-      READY: begin EN_pc = 1'b1; sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); sel_B = (OPcpde == 3'b100) ? 0 : (OPcode == 3'b101) ? 3 : 1; end
-      SHIFT: begin sel_sr = 1'b1; 
+      READY: begin 
+        EN_pc = 1'b1; 
+        sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); 
+        // [수정] OPcpde 오타 수정 및 비트 폭(2'd) 명시
+        sel_B = (OPcode == 4'b0100) ? 2'd0 : (OPcode == 4'b0101) ? 2'd3 : 2'd1; 
+      end
+      // [추가] 시프터에 데이터 로딩
+      LOADSR: begin
+        sr_parallel_load = 1'b1;
+      end
+      SHIFT: begin 
+        sel_sr = 1'b1; 
         if (shamt != 4'h0) start_shifting = 1'b1; 
       end
       WRTRF: EN_rf = 1'b1;
@@ -116,7 +133,7 @@ module cpu_controller(
       WRTMM: start_write_mem = 1'b1;
       READM: start_read_mem = 1'b1;
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
-      default: {start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
+      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     endcase
   end
 endmodule
