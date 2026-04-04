@@ -29,7 +29,6 @@ module tt_um_ysquare (
   wire shifting_CPU, direction_of_CPU, sr_parallel_load, sel_sr;
   wire [15:0] sr_parallel_out;
   wire shifting_SPI;
-  wire [15:0] spi_data_in;
   wire read_done_spi, write_done_spi;
 
   // 2. Address Decoder (교통정리)
