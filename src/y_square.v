@@ -77,7 +77,7 @@ module tt_um_ysquare (
   );
   
   // 5. IO 모듈 (Digital In/Out)
-  io_module io_inst (
+  IO io_inst (
     .clk(clk),
     .reset_n(rst_n),
     .write_data(cpu_data_out),
