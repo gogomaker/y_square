@@ -34,7 +34,7 @@ module CPU(
     .start_read_mem(start_read_mem),   // for SPI.v
     .start_write_mem(start_write_mem), // for SPI.v
     .start_shifting(start_shifting),   // for shifter.v
-    .sr_parallel_load(sr_parallel_load)// for shifter.v
+    .sr_parallel_load(sr_parallel_load),// for shifter.v
     .OPcode(OPcode),                   // from dataapath
     .func(func),                       // from dataapath
     .zero_flag(zero_flag),             // from dataapath
