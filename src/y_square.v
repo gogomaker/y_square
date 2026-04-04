@@ -17,46 +17,75 @@ module tt_um_ysquare (
   input  wire       rst_n     // reset_n - low to reset
 );
 
-  wire start_read_mem, start_write_mem, read_done, write_done, sel_sr;
-  wire direction_of_CPU, shifting_CPU, shifting_SPI, sr_parallel_load;
-  wire [15:0] address, data_for_spi, sr_parallel_out, parallel_out_shifter;
-  CPU cpu(
-    .address_memory(address),
-    .data_memory_in(sr_parallel_out),
-    .data_memory_out(data_for_spi),
+  // 1. 내부 와이어 선언
+  wire [15:0] cpu_addr, cpu_data_out, cpu_data_in;
+  wire cpu_start_read, cpu_start_write;
+  wire spi_en, din_en, dout_en, uart_rx_en, uart_tx_en;
+  wire [15:0] spi_data_in, io_data_in;
+  wire read_done, write_done;
+
+  // 2. Address Decoder (교통정리)
+  address_decoder decoder (
+    .address(cpu_addr),
+    .start_read(cpu_start_read),
+    .start_write(cpu_start_write),
+    .spi_en(spi_en),
+    .din_en(din_en),
+    .dout_en(dout_en),
+    .uart_rx_en(uart_rx_en),
+    .uart_tx_en(uart_tx_en)
+  );
+  
+  // 3. CPU 인스턴스화
+  CPU cpu_inst (
+    .address_memory(cpu_addr),
+    .data_memory_out(cpu_data_out),
+    .data_memory_in(cpu_data_in), // 아래 MUX 결과가 들어감
+    .start_read_mem(cpu_start_read),
+    .start_write_mem(cpu_start_write),
+    .read_done(read_done),
+    .write_done(write_done),
+    // ... (shifter 관련 포트 연결) ...
     .parallel_out_shifter(parallel_out_shifter),
     .start_shifting(shifting_CPU),
     .direction(direction_of_CPU),
     .sr_parallel_load(sr_parallel_load),
     .sel_sr(sel_sr),
-    //memory control signal port
-    .start_read_mem(start_read_mem),
-    .start_write_mem(start_write_mem),
-    .read_done(read_done),
-    .write_done(write_done),
-    //system port
     .clk(clk),
     .reset_n(rst_n)
   );
+  
+  // 4. SPI 모듈 (Enable 신호로 Gating)
+  SPI spi_inst (
+    .address(cpu_addr),
+    .data(cpu_data_out),
+    .start_read_mem(cpu_start_read & spi_en),   // SPI 영역일 때만 시작
+    .start_write_mem(cpu_start_write & spi_en), // SPI 영역일 때만 시작
+    .read_done(read_done_spi),
+    .write_done(write_done_spi),
+    .CS_n(uio_out[2]), .SCLK(uio_out[3]), .MOSI(uio_out[4]), .MISO(uio_in[5]),
+    .clk(clk), .reset_n(rst_n)
+  );
+  
+  // 5. IO 모듈 (Digital In/Out)
+  io_module io_inst (
+    .clk(clk), .reset_n(rst_n),
+    .write_data(cpu_data_out),
+    .read_data(io_data_in),
+    .din_en(din_en),
+    .dout_en(dout_en),
+    .start_write(cpu_start_write),
+    .phys_in(ui_in), .phys_out(uo_out)
+  );
+  // 6. 읽기 데이터 경로 MUX (매우 중요!)
+  // CPU가 데이터를 읽을 때, 주소에 따라 누구의 데이터를 줄지 결정합니다.
+  assign cpu_data_in = (spi_en) ? spi_data_in : 
+                       (din_en) ? io_data_in  : 16'h0000;
 
-  SPI spi(
-    // CPU 컨트롤러와의 인터페이스
-    .address(address),
-    .data(data_for_spi),
-    .start_read_mem(start_read_mem),
-    .start_write_mem(start_write_mem),
-    .read_done(read_done),
-    .write_done(write_done),
-    .start_shifting(shifting_SPI),
-    // 외부 SPI 물리 핀 (메모리와 연결)
-    .CS_n(uio_out[2]),  // Active LOW Chip Select
-    .SCLK(uio_out[3]),  // SPI Clock
-    .MOSI(uio_out[4]),  // Master Out Slave In
-    .MISO(uio_in[5]),   // Master In Slave Out (외부 시프터가 직접 받을 수도 있음)
-    // 시스템 신호
-    .clk(clk),
-    .reset_n(rst_n)
-  );
+  // 7. 완료 신호 통합
+  // 장치가 여러 개이므로, 현재 활성화된 장치의 완료 신호를 CPU에 전달합니다.
+  assign read_done  = (spi_en) ? read_done_spi : 1'b1; // IO는 즉시 완료되므로 1
+  assign write_done = (spi_en) ? write_done_spi : 1'b1;
 
   shifter s(
     .answer(sr_parallel_out),
@@ -70,8 +99,7 @@ module tt_um_ysquare (
   );
   //this is for just test.
   wire unused;
-  assign unused = ena | &ui_in | &uio_in;
-  assign uo_out = 8'b0;
+  assign unused = ena | &uio_in;
   assign uio_out[7:6] = 2'b0;
   assign uio_out[4:0] = 5'b0;
   assign uio_oe = 8'b11011110;
