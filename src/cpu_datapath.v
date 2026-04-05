@@ -19,6 +19,7 @@ module cpu_datapath(
   input wire EN_pc,        // from controller
   input wire EN_ir,        // from controller
   input wire EN_rf,        // from controller
+  input wire load_pc,
   input wire clk,
   input wire reset_n
 );
@@ -39,7 +40,8 @@ module cpu_datapath(
     .load_constant((sel_PCconst) ? immAddress : ALUout),
     .clk(clk),
     .reset_n(reset_n), 
-    .EN(EN_pc)
+    .EN(EN_pc), 
+    .LOAD(load_pc)
   );
   
   IR ir(
@@ -71,18 +73,17 @@ module cpu_datapath(
     .imm_address_extended(immAddress),
     .imm_extended(immData),
     .ir(data_IR),
-    .PC(address_PC)
+    .PC(address_PC[15:13])
   );
 
   ALU alu(
     .zero(zero),           //for controller
     .shamt(shamt),         //for shifter
     .direction(direction), //for shifter
-    .shift_answer(parallel_in_shifter), //for shifter
     .answer(ALUout),       //for ALU
     .A((sel_A) ? address_PC : A),        //for ALU
     .B((sel_B[1]) ? 
-      ((sel_B[0]) ? Rs2 : immData) : 
+      ((sel_B[0]) ? B : immData) : 
       ((sel_B[0]) ? 16'd2 : 16'd0)),           //for ALU
     .mode((OPcode == 3'b100) ? func : 
          (OPcode[2] == 1'b0) ? OPcode : 
