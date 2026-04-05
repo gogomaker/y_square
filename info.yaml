@@ -57,12 +57,12 @@ pinout:
   # Bidirectional pins
   uio[0]: "RX"
   uio[1]: "TX"
-  uio[2]: "CS"
-  uio[3]: "SCLK"
-  uio[4]: "MOSI"
-  uio[5]: "MISO"
-  uio[6]: "IO6"
-  uio[7]: "IO7"
+  uio[2]: "INTERRUPT"
+  uio[3]: "NC"
+  uio[4]: "CS"
+  uio[5]: "SCLK"
+  uio[6]: "MOSI"
+  uio[7]: "MISO"
 
 # Do not change!
 yaml_version: 6
