@@ -157,13 +157,21 @@ module SPI(
   // 4. Datapath: 카운터 및 MUXing (핵심 로직)
   // =========================================================
   reg [5:0] counter; // 최대 47까지 세어야 하므로 6비트 필요
+  // 수정된 SPI.v의 카운터 로직
   always @(posedge clk or negedge reset_n) begin
-    if(!reset_n || reset_counter)
+    if(!reset_n) begin
+      // 1순위: 비동기 리셋 (reset_n이 0이 되는 즉시 실행)
       counter <= 6'd0;
-    else if(increase)
+    end 
+    else if(reset_counter) begin
+      // 2순위: 동기 리셋 (클록 에지에서 reset_counter가 1일 때 실행)
+      counter <= 6'd0;
+    end
+    else if(increase) begin
+      // 3순위: 값 증가
       counter <= counter + 6'd1;
+    end
   end
-
   // 가상의 패킷 버퍼 (플립플롭을 전혀 사용하지 않는 단순 선 연결)
   wire [7:0]  wren_packet  = 8'h06;
   wire [31:0] read_packet  = {8'h03, 7'b0, address, 1'b0};
