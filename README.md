@@ -6,15 +6,6 @@ Project in ROKA. I want to make digital circuit even if here is desert of digita
 ## 프로젝트 소개
 이 프로젝트는 내가 전자공학 학부생으로서 배웠던 디지털회로 제작 지식을 가지고 극한의 환경에서 MPU 및 firmware를 만들어 보는 것에 초점을 두고 있다. 이를 통해 ASIC칩 제작 경험 및 불가능을 해냈다는 자신감을 가지고자 한다. 프로젝트는 데스크톱 크롬(웹환경) 및 스마트폰에서만 작성하였다. 자세한 내용은 아래에 작성되어 있다. 
 
-## How to set up this Verilog project
-
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
-
-The GitHub action will automatically build the ASIC files using [LibreLane](https://www.zerotoasiccourse.com/terminology/librelane/).
-
 프로젝트는 다음과 같은 환경에서 제작되었다:
 - ASIC making (https://tinytapeout.com/)
 - Verilog simulator (https://edaplayground.com/)
@@ -88,3 +79,7 @@ JAL & JR : OPcode(4) / address(12)
 2026-03-20: 금요일이다. 평일 저녁에 시간 내서 작성해 보는 건 처음이다. 오늘은 ISA의 틀렸던 부분(OPcode 정의)를 고쳤다. 이번 주 동안은 종이에 설계 자료를 작성하였다. 결과적으로, 컨트롤러의 설계를 일부 마쳤다. 이를 코드로 옮기기만 하면 된다. 
 
 2026-03-28: 지난주간에 작성했던 컨트롤러 설계를 바탕으로 MPU의 프로세싱 영역은 모두 제작했다. 코드 검증은 못 했고, 탑모듈에 이식만 성공한 상태. 이제 테스트코드를 돌려보아야 할 때이다. 추가적으로, 진짜로 SPI컨트롤러를 만들어야 하기도 하다.
+
+2026-04-05: 오늘은 SPI 컨트롤러를 만들었다. Gemini의 도움을 많이 받아 제작했다. 이후에 모든 소스코드를 작성하고, 한두 개의 버그를 제외하고는 다 고쳤다. 
+
+2026-04-06: 오늘은 전체 파일을 다 컴파일링했다. 에러가 없고, 청사진도 나온 상황. 이제 곧 있으면 진짜 작동하는 칩이 나오나보다. 아, UART 모듈은 아직 제작을 안 했다. 다른 것들 검증부터 마치고 만드려고 한다. 
