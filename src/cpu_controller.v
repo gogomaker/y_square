@@ -10,6 +10,7 @@ module cpu_controller(
   output reg EN_pc,
   output reg EN_ir,
   output reg EN_rf,
+  output reg load_pc,
   output reg start_read_mem,
   output reg start_write_mem,
   output reg start_shifting,
@@ -107,14 +108,13 @@ module cpu_controller(
   // define current output
   always @(*) begin
     // [수정] sr_parallel_load를 포함하여 14비트 폭으로 확장 (래치 완벽 방지)
-    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+    {load_pc, sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0;
     
     case(state)
       START: start_read_mem = 1'b1;
-      PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; end
+      PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1;  EN_pc = 1'b1; load_pc = 1'b0; end
       READY: begin 
-        EN_pc = 1'b1; 
-        sel_A = (OPcode[3:1] == 3'b001 || OPcode == 3'b111); 
+        sel_A = (OPcode[3:1] == 3'b001 | OPcode[3:1] == 3'b111); 
         // [수정] OPcpde 오타 수정 및 비트 폭(2'd) 명시
         sel_B = (OPcode == 4'b0100) ? 2'd0 : (OPcode == 4'b0101) ? 2'd3 : 2'd1; 
       end
@@ -126,14 +126,19 @@ module cpu_controller(
         sel_sr = 1'b1; 
         if (shamt != 4'h0) start_shifting = 1'b1; 
       end
-      WRTRF: EN_rf = 1'b1;
+      WRTRF: begin 
+        EN_rf = 1'b1;
+        // 시프트 명령(func == 3'b111 등)일 경우 sel_write를 1로 하여 
+        // ALUout 대신 shifter 결과를 직접 RF에 쓰도록 함
+        if (OPcode[3:1] == 3'b100 && func == 2'b11) sel_write = 1'b1; 
+      end
       PCRDY: sel_PCconst = 1'b1;
       LRWRT: begin EN_rf = 1'b1; sel_PCconst = 1'b1; end
-      PCWRT: EN_pc = 1'b1;
+      PCWRT: begin EN_pc = 1'b1; load_pc = 1'b1; end
       WRTMM: start_write_mem = 1'b1;
       READM: start_read_mem = 1'b1;
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
-      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+      default: {load_pc, sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0;
     endcase
   end
 endmodule
