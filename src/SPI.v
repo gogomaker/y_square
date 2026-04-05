@@ -144,6 +144,14 @@ module SPI(
         else       write_done = 1'b1;
         reset_counter = 1'b1;
       end
+      default: begin
+        reset_counter  = 1'b0;
+        increase       = 1'b0;
+        read_done      = 1'b0;
+        write_done     = 1'b0;
+        CS_n           = 1'b1;
+        start_shifting = 1'b0;
+      end
     endcase
   end
 
