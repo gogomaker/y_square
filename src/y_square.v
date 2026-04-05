@@ -116,7 +116,8 @@ module tt_um_ysquare (
   // 9. Tiny Tapeout 핀 설정 및 경고 방지
   wire unused;
   assign unused = ena | &uio_in; // 사용하지 않는 신호 묶음
-  
+  assign uio_out[3:0] = 4'h0;
+  assign uio_out[7] = 1'b0;
   // 핀 방향 설정 (CS, SCLK, MOSI 등 출력 비트 확인)
   assign uio_oe = 8'b01110010; 
 
