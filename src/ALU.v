@@ -7,14 +7,13 @@ module ALU(
   output reg [15:0] answer,  //for ALU
   input wire [15:0] A,       //for ALU
   input wire [15:0] B,       //for ALU
-  input wire [2:0] mode,     //for ALU
-  input wire [15:0] shift_answer //for shifter
+  input wire [2:0] mode      //for ALU
 );
 
     // 1. 가산기 통합 (Add/Sub/SLT를 하나로)
   wire [15:0] sub_B = (mode == 3'd1 || mode == 3'd5) ? ~B : B;
   wire cin = (mode == 3'd1 || mode == 3'd5) ? 1'b1 : 1'b0;
-  wire [15:0] sum_result = A + sub_B + cin;
+  wire [15:0] sum_result = A + sub_B + {15'b0, cin};
 
   // 2. 시프터 연결
   assign shamt = B[3:0];
@@ -29,8 +28,7 @@ module ALU(
       3'd3: answer = A | B;                  // OR
       3'd4: answer = A ^ B;                  // XOR
       3'd5: answer = {15'b0, sum_result[15]}; // SLT (부호비트 활용)
-      3'd6, 
-      3'd7: answer = shift_answer;           // Shift
+      //SLL, SLR 결과는 RF에 바로 쓰게 됨.
       default: answer = 16'h0;
     endcase
   end
