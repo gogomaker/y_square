@@ -57,7 +57,7 @@ pinout:
   # Bidirectional pins
   uio[0]: "RX"
   uio[1]: "TX"
-  uio[2]: "INTERRUPT"
+  uio[2]: "ITR"
   uio[3]: "NC"
   uio[4]: "CS"
   uio[5]: "SCLK"
