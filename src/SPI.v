@@ -55,6 +55,7 @@ module SPI(
   // Next State Logic
   always @(*) begin
     case(state)
+      next_state = WAIT;
       WAIT: begin
         if(start_write_mem)      next_state = WREN;
         else if(start_read_mem)  next_state = SEND;
@@ -85,11 +86,8 @@ module SPI(
         else                     next_state = READ_DATA;
       end
           
-      DONE: begin
-        next_state = WAIT;
-      end
-          
-      default:                     next_state = WAIT;
+      DONE:                      next_state = WAIT;
+      default:                   next_state = WAIT;
     endcase
   end
 
