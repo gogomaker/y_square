@@ -72,10 +72,10 @@ module tt_um_ysquare (
     .start_shifting(shifting_SPI), // <--- 이 포트가 정확히 연결됨
     .read_done(read_done_spi),
     .write_done(write_done_spi),
-    .CS_n(uio_out[2]),
-    .SCLK(uio_out[3]),
-    .MOSI(uio_out[4]),
-    .MISO(uio_in[5]),
+    .CS_n(uio_out[4]),
+    .SCLK(uio_out[5]),
+    .MOSI(uio_out[6]),
+    .MISO(uio_in[7]),
     .clk(clk),
     .reset_n(rst_n)
   );
@@ -105,7 +105,7 @@ module tt_um_ysquare (
   shifter s(
     .answer(sr_parallel_out),
     .parallel_in(parallel_out_shifter),
-    .serial_in(uio_in[5]),
+    .serial_in(uio_in[7]),
     .en_shift(sel_sr ? shifting_CPU : shifting_SPI),
     .en_load(sel_sr ? sr_parallel_load : 1'b0),
     .direction(sel_sr ? direction_of_CPU : 1'b1),
@@ -117,11 +117,7 @@ module tt_um_ysquare (
   wire unused;
   assign unused = ena | &uio_in; // 사용하지 않는 신호 묶음
   
-  // uio_out[4:0] = 5'b0; 와 같은 중복 할당 제거됨
-  assign uio_out[7:5] = 3'b000;
-  assign uio_out[1:0] = 2'b00;
-  
   // 핀 방향 설정 (CS, SCLK, MOSI 등 출력 비트 확인)
-  assign uio_oe = 8'b11011110; 
+  assign uio_oe = 8'b01110010; 
 
 endmodule
