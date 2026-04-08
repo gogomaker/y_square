@@ -5,14 +5,14 @@ Here is ISA for MPU.
 
 | assembly format | RTL | OPcode | Func | IsImmSigned | type |
 | :-: | :-: | :-: | :-: | :-: | :-: |
-| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 101 | 000 | - | R |
-| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 101 | 001 | - | R |
-| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 101 | 010 | - | R |
-| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 101 | 011 | - | R |
-| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 101 | 100 | - | R |
-| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 101 | 101 | - | R |
-| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 101 | 110 | - | R |
-| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 101 | 111 | - | R |
+| ADD Rd, Rs1, Rs2 | Rd <- Rs1 + Rs2 | 100 | 000 | - | R |
+| SUB Rd, Rs1, Rs2 | Rd <- Rs1 - Rs2 | 100 | 001 | - | R |
+| AND Rd, Rs1, Rs2 | Rd <- Rs1 & Rs2 | 100 | 010 | - | R |
+| OR  Rd, Rs1, Rs2 | Rd <- Rs1 or Rs2 | 100 | 011 | - | R |
+| XOR Rd, Rs1, Rs2 | Rd <- Rs1 xor Rs2 | 100 | 100 | - | R |
+| SLT Rd, Rs1, Rs2 | Rd <- (Rs1 < Rs2) ? 1:0 | 100 | 101 | - | R |
+| SLR Rd, Rs1, Rs2 | Rd <- Rs1 >> Rs2 | 100 | 110 | - | R |
+| SLL Rd, Rs1, Rs2 | Rd <- Rs1 << Rs2 | 100 | 111 | - | R |
 | LW Rd, Rs, imm | Rd <- Mem[Rs + imm] | 110 | - | True | I |
 | SW Rd, Rs, imm | Mem[Rs + imm] <- Rd | 111 | - | True | I |
 | ADDI Rd, Rs, imm | Rd <- Rs + imm | 000 | - | True | I |
@@ -32,7 +32,7 @@ JAL & JR : OPcode(4) / address(12)
 
 For example, if you want to add R3 and R4 and save it to R2, you can write assembly code like
 
-ADD R2 R3 R4, and binary code is 1010 0100 1110 0000.
+ADD R2 R3 R4, and binary code is 1000 0100 1110 0000.
 
 
 Memory address map of MPU is shown below.
@@ -56,7 +56,7 @@ I will write IO test binary codes (maybe 3 code sets) here.
 1. 8 LEDs for output pins. (Can change)
 2. 8 switchs for input pins. (Can change)
 3. PC or arduino for UART communcation. (Not essential)
-4. 64kB QSPI FRAM for memory of MPU. (Essential)
+4. 1MiB SPI FRAM for memory of MPU. (FM25V10, Essential)
 
 Here is pinmap of my MPU. 
 | PIN number | IN | OUT | INOUT |
