@@ -36,9 +36,7 @@ module cpu_controller(
   localparam LRWRT  = 4'h7;  // Link register write state
   localparam PCWRT  = 4'h8;  // PC write state
   localparam WRTMM  = 4'h9;  // Read memory start state
-  localparam WATM2  = 4'hA;  // wait memory latency state 2
   localparam READM  = 4'hB;  // write memory start state
-  localparam WATM3  = 4'hC;  // wait memory latency state 3
   localparam WMTRF  = 4'hD;  // write memory to register file
   localparam LOADSR = 4'hE;  // [추가] Load Shift Register state
   
@@ -76,7 +74,6 @@ module cpu_controller(
         else
           next_state = START;
       end
-      // [추가] LOADSR 상태 다음에는 SHIFT로 이동
       LOADSR: next_state = SHIFT;
       SHIFT:  next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
       WRTRF:  next_state = START;
@@ -106,12 +103,11 @@ module cpu_controller(
   wire [1:0] selected_B = (OPcode[3:1] == 3'b100) ? 2'd0 : (OPcode[3:1] == 3'b101) ? 2'd3 : 2'd1;
   // define current output
   always @(*) begin
-    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
-    
+    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; EN_pc = 1'b1; end
-      LOADSR: begin  sr_parallel_load = 1'b1; end
+      LOADSR: begin sr_parallel_load = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
         if (shamt != 4'h0) start_shifting = 1'b1; 
@@ -127,7 +123,7 @@ module cpu_controller(
       WRTMM: begin sel_A = 1'b1; sel_B = selected_B; start_write_mem = 1'b1; sel_address = 1'b1; end 
       READM: begin sel_A = 1'b1; sel_B = selected_B; start_read_mem = 1'b1; sel_address = 1'b1;  end
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
-      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
     endcase
   end
 endmodule
