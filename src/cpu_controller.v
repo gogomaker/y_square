@@ -83,9 +83,7 @@ module cpu_controller(
       LRWRT:  next_state = START;
       PCWRT:  next_state = START;
       WRTMM:  next_state = (write_done) ? START : WRTMM;
-      WATM2:  ;
       READM:  next_state = (read_done) ? WMTRF : READM;
-      WATM3:  ;
       WMTRF:  next_state = START;
       default: next_state = START;
     endcase
@@ -112,7 +110,6 @@ module cpu_controller(
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; EN_pc = 1'b1; end
-      READY: ;
       LOADSR: begin  sr_parallel_load = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
@@ -126,7 +123,6 @@ module cpu_controller(
       end
       PCRDY: begin sel_PCconst = 1'b1; EN_pc = 1'b1; end
       LRWRT: begin sel_A = 1'b1; sel_B = selected_B; EN_rf = 1'b1; sel_PCconst = 1'b1; EN_pc = 1'b1; end
-      PCWRT: ;
       WRTMM: begin sel_A = 1'b1; sel_B = selected_B; start_write_mem = 1'b1; sel_address = 1'b1; end 
       READM: begin sel_A = 1'b1; sel_B = selected_B; start_read_mem = 1'b1; sel_address = 1'b1;  end
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
