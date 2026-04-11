@@ -94,8 +94,18 @@ module tt_um_ysquare (
   );
 
   // 6. 읽기 데이터 경로 MUX (수정: spi_data_in 대신 sr_parallel_out 사용)
-  assign cpu_data_in = (spi_en) ? sr_parallel_out : 
-                       (din_en) ? io_data_in      : 16'h0000;
+  reg spi_en_pipelined, din_en_pipelined;
+  always @(posedge clk, negedge rst_n) begin
+    if(!rst_n) begin
+      spi_en_pipelined <= 1'b0;
+      din_en_pipelined <= 1'b0;
+    end else begin
+      spi_en_pipelined <= spi_en;
+      din_en_pipelined <= din_en;
+    end
+  end
+  assign cpu_data_in = (spi_en | spi_en_pipelined) ? sr_parallel_out : 
+    				   (din_en | din_en_pipelined) ? io_data_in      : 16'h0000;
 
   // 7. 완료 신호 통합
   assign read_done  = (spi_en) ? read_done_spi  : 1'b1;
@@ -105,7 +115,7 @@ module tt_um_ysquare (
   shifter s(
     .answer(sr_parallel_out),
     .parallel_in(parallel_out_shifter),
-    .serial_in(uio_in[7]),
+    .serial_in(sel_sr ? 1'b0 : uio_in[7]),
     .en_shift(sel_sr ? shifting_CPU : shifting_SPI),
     .en_load(sel_sr ? sr_parallel_load : 1'b0),
     .direction(sel_sr ? direction_of_CPU : 1'b1),
