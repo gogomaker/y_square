@@ -52,6 +52,7 @@ module cpu_controller(
 
   // define next state
   always @(*) begin
+    next_state = START;
     case(state)
       START: next_state = WATM1;
       WATM1: next_state = (read_done) ? PC_UP : WATM1;
