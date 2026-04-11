@@ -10,7 +10,6 @@ module cpu_controller(
   output reg EN_pc,
   output reg EN_ir,
   output reg EN_rf,
-  output reg load_pc,
   output reg start_read_mem,
   output reg start_write_mem,
   output reg start_shifting,
@@ -80,13 +79,13 @@ module cpu_controller(
       LOADSR: next_state = SHIFT;
       SHIFT:  next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
       WRTRF:  next_state = START;
-      PCRDY:  next_state = PCWRT;
-      LRWRT:  next_state = PCWRT;
+      PCRDY:  next_state = START;
+      LRWRT:  next_state = START;
       PCWRT:  next_state = START;
-      WRTMM:  next_state = WATM2;
-      WATM2:  next_state = (write_done) ? START : WATM2;
-      READM:  next_state = WATM3;
-      WATM3:  next_state = (read_done) ? WMTRF : WATM3;
+      WRTMM:  next_state = (write_done) ? START : WRTMM;
+      WATM2:  ;
+      READM:  next_state = (read_done) ? WMTRF : READM;
+      WATM3:  ;
       WMTRF:  next_state = START;
       default: next_state = START;
     endcase
@@ -105,40 +104,33 @@ module cpu_controller(
       shift_counter <= 4'h0; // SHIFT 상태가 아니면 항상 0으로 리셋
   end
 
+  wire [1:0] selected_B = (OPcode[3:1] == 3'b100) ? 2'd0 : (OPcode[3:1] == 3'b101) ? 2'd3 : 2'd1;
   // define current output
   always @(*) begin
-    // [수정] sr_parallel_load를 포함하여 14비트 폭으로 확장 (래치 완벽 방지)
-    {load_pc, sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0;
+    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     
     case(state)
       START: start_read_mem = 1'b1;
-      PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1;  EN_pc = 1'b1; load_pc = 1'b0; end
-      READY: begin 
-        sel_A = (OPcode[3:1] == 3'b001 | OPcode[3:1] == 3'b111); 
-        // [수정] OPcpde 오타 수정 및 비트 폭(2'd) 명시
-        sel_B = (OPcode == 4'b0100) ? 2'd0 : (OPcode == 4'b0101) ? 2'd3 : 2'd1; 
-      end
-      // [추가] 시프터에 데이터 로딩
-      LOADSR: begin
-        sr_parallel_load = 1'b1;
-      end
+      PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; EN_pc = 1'b1; end
+      READY: ;
+      LOADSR: begin  sr_parallel_load = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
         if (shamt != 4'h0) start_shifting = 1'b1; 
       end
       WRTRF: begin 
         EN_rf = 1'b1;
-        // 시프트 명령(func == 3'b111 등)일 경우 sel_write를 1로 하여 
-        // ALUout 대신 shifter 결과를 직접 RF에 쓰도록 함
+        sel_A = 1'b1;
+        sel_B = selected_B; 
         if (OPcode[3:1] == 3'b100 && func == 2'b11) sel_write = 1'b1; 
       end
-      PCRDY: sel_PCconst = 1'b1;
-      LRWRT: begin EN_rf = 1'b1; sel_PCconst = 1'b1; end
-      PCWRT: begin EN_pc = 1'b1; load_pc = 1'b1; end
-      WRTMM: start_write_mem = 1'b1;
-      READM: start_read_mem = 1'b1;
+      PCRDY: begin sel_PCconst = 1'b1; EN_pc = 1'b1; end
+      LRWRT: begin sel_A = 1'b1; sel_B = selected_B; EN_rf = 1'b1; sel_PCconst = 1'b1; EN_pc = 1'b1; end
+      PCWRT: ;
+      WRTMM: begin sel_A = 1'b1; sel_B = selected_B; start_write_mem = 1'b1; sel_address = 1'b1; end 
+      READM: begin sel_A = 1'b1; sel_B = selected_B; start_read_mem = 1'b1; sel_address = 1'b1;  end
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
-      default: {load_pc, sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0;
+      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     endcase
   end
 endmodule
