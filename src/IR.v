@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 `default_nettype none
 
 module IR(
@@ -18,8 +17,10 @@ module IR(
   always @(posedge clk, negedge reset_n) begin
     if(!reset_n)
       register <= 16'h0;
-    else if(en)
-      register <= input_IR;
+    else begin
+      if(en)
+      	register <= input_IR;
+    end
   end
   
   assign OPcode = register[15:13];
