@@ -31,7 +31,6 @@ module CPU(
     .EN_pc(EN_pc),                     // for datapath
     .EN_ir(EN_ir),                     // for datapath
     .EN_rf(EN_rf),                     // for datapath
-    .load_pc(load_pc),
     .start_read_mem(start_read_mem),   // for SPI.v
     .start_write_mem(start_write_mem), // for SPI.v
     .start_shifting(start_shifting),   // for shifter.v
@@ -64,7 +63,6 @@ module CPU(
     .EN_pc(EN_pc),                               // from controller
     .EN_ir(EN_ir),                               // from controller
     .EN_rf(EN_rf),                               // from controller
-    .load_pc(load_pc),
     .clk(clk),
     .reset_n(reset_n)
 );
