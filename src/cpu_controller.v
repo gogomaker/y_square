@@ -40,6 +40,7 @@ module cpu_controller(
   localparam WMTRF = 4'hB;
   localparam BEQAL = 4'hC;  // for BEQ
   localparam BRNCH = 4'hD;  // for BEQ
+  localparam IRUDE = 4'hE;  // IR update
   
   // define current state
   always @(posedge clk or negedge reset_n) begin
@@ -54,7 +55,8 @@ module cpu_controller(
     next_state = START;
     case(state)
       START: next_state = WAITM;
-      WAITM: next_state = (read_done) ? PC_UP : WAITM;
+      WAITM: next_state = (read_done) ? IRUDE : WAITM;
+      IRUDE: next_state = PC_UP;
       PC_UP: begin
         if(OPcode[3:1] == 3'b100)
           next_state = (func == 2'b11) ? LDSHR : WRTRF; 
@@ -107,7 +109,8 @@ module cpu_controller(
     {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     case(state)
       START: start_read_mem = 1'b1;
-      PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; EN_pc = 1'b1; end
+      IRUDE: EN_ir = 1'b1;
+      PC_UP: begin sel_B = 2'd2;  EN_pc = 1'b1; end
       LDSHR: begin sr_parallel_load = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
