@@ -104,7 +104,7 @@ module cpu_controller(
   wire [1:0] selected_B = (OPcode[3:1] == 3'b100) ? 2'd0 : (OPcode[3:1] == 3'b101) ? 2'd3 : 2'd1;
   // define current output
   always @(*) begin
-    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
+    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     case(state)
       START: start_read_mem = 1'b1;
       PC_UP: begin sel_B = 2'd2; EN_ir = 1'b1; EN_pc = 1'b1; end
@@ -127,7 +127,7 @@ module cpu_controller(
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
       BEQAL: begin sel_A = 1'b1; sel_B = 2'b0; end
       BRNCH: begin sel_B = selected_B; EN_pc = zero_flag; end
-      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 13'b0;
+      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
     endcase
   end
 endmodule
