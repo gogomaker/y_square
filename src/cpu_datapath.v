@@ -8,7 +8,7 @@ module cpu_datapath(
   output wire direction,                   // to shifter
   output reg zero_flag,          // to controller
   output wire [3:0] OPcode_ctr,  // to controller
-  output wire [1:0] func_out,
+  output wire [2:0] func_out,
 
   input wire [15:0] parallel_in_shifter, // from shifter
   input wire sel_address,  // from controller
@@ -19,7 +19,7 @@ module cpu_datapath(
   input wire EN_pc,        // from controller
   input wire EN_ir,        // from controller
   input wire EN_rf,        // from controller
-  input wire mode,
+  input wire [2:0] mode,
   input wire clk,
   input wire reset_n
 );
@@ -31,7 +31,7 @@ module cpu_datapath(
   assign parallel_memory = B;
   assign parallel_out_shifter = A;
   assign OPcode_ctr = data_IR[15:12];
-  assign func_out = func[2:1];
+  assign func_out = func;
   always @(posedge clk)
     zero_flag <= zero;
   
