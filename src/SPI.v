@@ -94,26 +94,34 @@ module SPI(
     else if(reset_counter) counter <= 0;
     else if(increase) counter <= counter + 1;
   end
-
-  // 패킷 구성: 명령어(8) + 24비트 주소(8비트 0패딩 + 16비트 주소)
+  // 패킷 구성 확인: 명령어(8) + 주소(24) + 데이터(16) = 총 48비트
   wire [7:0]  wren_packet  = 8'h06;
-  wire [31:0] read_packet  = {8'h03, 7'b0, address, 1'b0}; // 표준 3바이트 주소 방식
-  wire [47:0] write_packet = {8'h02, 7'b0, address, 1'b0, data}; // 주소 뒤에 16비트 데이터
+  wire [31:0] read_packet  = {8'h03, 7'b0, address, 1'b0};
+  wire [47:0] write_packet = {8'h02, 7'b0, address, 1'b0, data};
 
+  // MUX를 통한 1비트 직렬 출력 (MOSI)
   reg mosi_out;
   always @(*) begin
-    mosi_out = 1'b0;
-    if(state == WREN) mosi_out = wren_packet[7 - counter[2:0]];
-    else if(state == SEND) begin
-      if(status) mosi_out = read_packet[31 - counter[4:0]];
-      else       mosi_out = (counter < 32) ? read_packet[31 - counter[4:0]] : data[47 - counter];
-    end
+    mosi_out = 1'b0; // Default
+    case(state)
+      WREN: begin
+        // WREN 명령 (8비트) 전송
+        mosi_out = wren_packet[7 - counter[2:0]];
+      end
+      SEND: begin
+        if(status) begin
+          // READ 모드: read_packet (32비트) 전송
+          mosi_out = read_packet[31 - counter[4:0]];
+        end else begin
+          // WRITE 모드: write_packet (48비트) 전송
+          // [수정] 기존의 복잡한 삼항 연산자 대신 정의된 패킷을 직접 사용합니다.
+          mosi_out = write_packet[47 - counter[5:0]];
+        end
+      end
+      default: mosi_out = 1'b0;
+    endcase
   end
   assign MOSI = mosi_out;
 
-  // 5. SCLK 생성 (SPI Mode 0 핵심 수정)
-  // [수정] clk를 그대로 쓰면 Master/Slave 간의 Setup/Hold 타이밍 충돌이 납니다.
-  // FPGA가 posedge clk에서 MOSI를 바꾸면, SCLK는 반전된 ~clk를 보내야 Slave가 안정적으로 샘플링합니다.
   assign SCLK = (!CS_n && state != TOGGLE && state != DONE) ? clk : 1'b0;
-
 endmodule
