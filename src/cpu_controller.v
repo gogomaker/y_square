@@ -14,10 +14,10 @@ module cpu_controller(
   output reg start_write_mem,
   output reg start_shifting,
   output reg sr_parallel_load,
-  output reg mode,
+  output reg [2:0] mode,
   input wire [3:0] shamt,
   input wire [3:0] OPcode,
-  input wire [1:0] func,
+  input wire [2:0] func,
   input wire zero_flag,
   input wire read_done,
   input wire write_done,
@@ -60,7 +60,7 @@ module cpu_controller(
       IRUDE: next_state = PC_UP;
       PC_UP: begin
         if(OPcode[3:1] == 3'b100)
-          next_state = (func == 2'b11) ? LDSHR : WRTRF; 
+          next_state = (func[2:1] == 2'b11) ? LDSHR : WRTRF; 
         else if(OPcode[3:1] == 3'b000 || OPcode[3:1] == 3'b010)
           next_state = WRTRF;
         else if(OPcode[3:1] == 3'b011)
@@ -79,7 +79,7 @@ module cpu_controller(
           next_state = START;
       end
       LDSHR: next_state = SHIFT;
-      SHIFT: next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WRTRF : SHIFT;
+      SHIFT: next_state = (shamt == 4'h0 || shift_counter == shamt - 4'h1) ? WMTRF : SHIFT;
       WRTRF: next_state = START;
       UPCIM: next_state = START;
       LRWRT: next_state = START;
@@ -104,7 +104,7 @@ module cpu_controller(
       shift_counter <= 4'h0;
   end
   
-  wire [2:0] pre_mode = (OPcode == 3'b100) ? func : (OPcode[2] == 1'b0) ? OPcode : 3'b000;         //for ALU
+  wire [2:0] pre_mode = (OPcode[3:1] == 3'b100) ? func : (OPcode[3] == 1'b0) ? OPcode[3:1] : 3'b000;         //for ALU
   wire [1:0] selected_B = (OPcode[3:1] == 3'b100) ? 2'd0 : (OPcode[3:1] == 3'b101) ? 2'd3 : 2'd1;
   // define current output
   always @(*) begin
@@ -114,7 +114,7 @@ module cpu_controller(
       START: start_read_mem = 1'b1;
       IRUDE: EN_ir = 1'b1;
       PC_UP: begin sel_B = 2'd2;  EN_pc = 1'b1; mode = 2'b0; end
-      LDSHR: begin sr_parallel_load = 1'b1; end
+      LDSHR: begin sr_parallel_load = 1'b1; sel_sr = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
         if (shamt != 4'h0) start_shifting = 1'b1; 
@@ -123,7 +123,7 @@ module cpu_controller(
         EN_rf = 1'b1;
         sel_A = 1'b1;
         sel_B = selected_B; 
-        if (OPcode[3:1] == 3'b100 && func == 2'b11) sel_write = 1'b1; 
+        if (OPcode[3:1] == 3'b100 && func[2:1] == 2'b11) sel_write = 1'b1; 
       end
       UPCIM: begin sel_PCconst = 1'b1; EN_pc = 1'b1; end
       LRWRT: begin sel_B = selected_B; EN_rf = 1'b1; sel_PCconst = 1'b1; EN_pc = 1'b1; end
@@ -132,7 +132,7 @@ module cpu_controller(
       WRTMM: begin sel_A = 1'b1; sel_B = selected_B; start_write_mem = 1'b1; sel_address = 1'b1; end 
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
       BEQAL: begin sel_A = 1'b1; sel_B = 2'b0; end
-      BRNCH: begin sel_B = selected_B; EN_pc = zero_flag; end
+      BRNCH: begin sel_B = selected_B; EN_pc = zero_flag; mode = 3'b0; end
       default: begin {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0; mode = pre_mode; end
     endcase
   end
