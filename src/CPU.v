@@ -18,9 +18,9 @@ module CPU(
 );
   wire sel_address, sel_PCconst, EN_pc, EN_ir, EN_rf, sel_A, zero_flag, sel_write, load_pc;
   wire [3:0] OPcode;
-  wire [1:0] func, sel_B;
+  wire [1:0] sel_B;
   wire [3:0] shamt;
-  wire [2:0] mode;
+  wire [2:0] mode, func;
 
   cpu_controller controller(
     .sel_address(sel_address),         // for datapath
