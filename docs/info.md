@@ -41,11 +41,11 @@ I use MMIO, so if you want to use IO device, you should use LW and SW instructio
 
 | Address number | Device |
 | :---: | :---: |
-| 0x0000~0x0007 | Digital in |
-| 0x0008~0x000F | Digital out |
-| 0x0010~0x0017 | UART RX buffer |
-| 0x0018~0x001F | UART TX buffer |
-| 0x0020~0xFFFF | QSPI FRAM |
+| 0x0000 | Digital in |
+| 0x0001 | Digital out |
+| 0x0002 | UART RX buffer |
+| 0x0003 | UART TX buffer |
+| 0x0010~0xFFFF | QSPI FRAM |
 
 ## How to test
 
