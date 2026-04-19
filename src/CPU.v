@@ -20,6 +20,7 @@ module CPU(
   wire [3:0] OPcode;
   wire [1:0] func, sel_B;
   wire [3:0] shamt;
+  wire [2:0] mode;
 
   cpu_controller controller(
     .sel_address(sel_address),         // for datapath
@@ -31,6 +32,7 @@ module CPU(
     .EN_pc(EN_pc),                     // for datapath
     .EN_ir(EN_ir),                     // for datapath
     .EN_rf(EN_rf),                     // for datapath
+    .mode(mode),
     .start_read_mem(start_read_mem),   // for SPI.v
     .start_write_mem(start_write_mem), // for SPI.v
     .start_shifting(start_shifting),   // for shifter.v
@@ -63,6 +65,7 @@ module CPU(
     .EN_pc(EN_pc),                               // from controller
     .EN_ir(EN_ir),                               // from controller
     .EN_rf(EN_rf),                               // from controller
+    .mode(mode),
     .clk(clk),
     .reset_n(reset_n)
 );
