@@ -2,6 +2,7 @@
  * Copyright (c) 2026 Caleb Son
  * SPDX-License-Identifier: Apache-2.0
  */
+`timescale 1ns/1ps
 `default_nettype none
 
 module tt_um_ysquare (
@@ -103,8 +104,7 @@ module tt_um_ysquare (
       din_en_pipelined <= din_en;
     end
   end
-  assign cpu_data_in = (spi_en | spi_en_pipelined) ? sr_parallel_out : 
-    				   (din_en | din_en_pipelined) ? io_data_in      : 16'h0000;
+  assign cpu_data_in = (din_en | din_en_pipelined) ? io_data_in : sr_parallel_out;
 
   // 7. 완료 신호 통합
   assign read_done  = (spi_en) ? read_done_spi  : 1'b1;
