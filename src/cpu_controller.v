@@ -13,7 +13,8 @@ module cpu_controller(
   output reg start_read_mem,
   output reg start_write_mem,
   output reg start_shifting,
-  output reg sr_parallel_load,  // [추가] 시프터 병렬 로드 신호
+  output reg sr_parallel_load,
+  output reg mode,
   input wire [3:0] shamt,
   input wire [3:0] OPcode,
   input wire [1:0] func,
@@ -102,15 +103,17 @@ module cpu_controller(
     else
       shift_counter <= 4'h0;
   end
-
+  
+  wire [2:0] pre_mode = (OPcode == 3'b100) ? func : (OPcode[2] == 1'b0) ? OPcode : 3'b000;         //for ALU
   wire [1:0] selected_B = (OPcode[3:1] == 3'b100) ? 2'd0 : (OPcode[3:1] == 3'b101) ? 2'd3 : 2'd1;
   // define current output
   always @(*) begin
-    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+    {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0;
+    mode = pre_mode;
     case(state)
       START: start_read_mem = 1'b1;
       IRUDE: EN_ir = 1'b1;
-      PC_UP: begin sel_B = 2'd2;  EN_pc = 1'b1; end
+      PC_UP: begin sel_B = 2'd2;  EN_pc = 1'b1; mode = 2'b0; end
       LDSHR: begin sr_parallel_load = 1'b1; end
       SHIFT: begin 
         sel_sr = 1'b1; 
@@ -130,7 +133,7 @@ module cpu_controller(
       WMTRF: begin sel_write = 1'b1; EN_rf = 1'b1; end
       BEQAL: begin sel_A = 1'b1; sel_B = 2'b0; end
       BRNCH: begin sel_B = selected_B; EN_pc = zero_flag; end
-      default: {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 14'b0;
+      default: begin {sr_parallel_load, start_shifting, sel_address, sel_PCconst, sel_write, sel_A, sel_B, sel_sr, EN_pc, EN_ir, EN_rf, start_read_mem, start_write_mem} = 15'b0; mode = pre_mode; end
     endcase
   end
 endmodule
