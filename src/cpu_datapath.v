@@ -19,6 +19,7 @@ module cpu_datapath(
   input wire EN_pc,        // from controller
   input wire EN_ir,        // from controller
   input wire EN_rf,        // from controller
+  input wire mode,
   input wire clk,
   input wire reset_n
 );
@@ -85,9 +86,7 @@ module cpu_datapath(
     .answer(ALUout),       //for ALU
     .A((sel_A) ? A : address_PC),   //for ALU
     .B(selected_B),           		//for ALU
-    .mode((OPcode == 3'b100) ? func : 
-         (OPcode[2] == 1'b0) ? OPcode : 
-         3'b000)         //for ALU
+    .mode(mode)
   );
 
 endmodule
