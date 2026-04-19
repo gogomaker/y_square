@@ -10,7 +10,7 @@ module PC(
 
   always @(posedge clk or negedge reset_n) begin
     if(!reset_n)
-      address <= 16'd32;
+      address <= 16'd16;
     else if (EN) begin
       address <= load_constant;
     end
